@@ -1,0 +1,29 @@
+python 3.14.6
+qiskit 2.5.2
+WrapAngles out_of_bounds_rzz 0 in_basis None
+TwoQubitPeepholeOptimization out_of_bounds_rzz 7 in_basis None
+GatesInBasis out_of_bounds_rzz 7 in_basis False
+WrapAngles out_of_bounds_rzz 0 in_basis False
+TwoQubitPeepholeOptimization out_of_bounds_rzz 6 in_basis False
+GatesInBasis out_of_bounds_rzz 6 in_basis False
+WrapAngles out_of_bounds_rzz 0 in_basis False
+TwoQubitPeepholeOptimization out_of_bounds_rzz 5 in_basis False
+GatesInBasis out_of_bounds_rzz 5 in_basis False
+WrapAngles out_of_bounds_rzz 0 in_basis False
+TwoQubitPeepholeOptimization out_of_bounds_rzz 4 in_basis False
+GatesInBasis out_of_bounds_rzz 4 in_basis False
+WrapAngles out_of_bounds_rzz 0 in_basis False
+TwoQubitPeepholeOptimization out_of_bounds_rzz 3 in_basis False
+GatesInBasis out_of_bounds_rzz 3 in_basis False
+WrapAngles out_of_bounds_rzz 0 in_basis False
+TwoQubitPeepholeOptimization out_of_bounds_rzz 2 in_basis False
+GatesInBasis out_of_bounds_rzz 2 in_basis False
+WrapAngles out_of_bounds_rzz 0 in_basis False
+TwoQubitPeepholeOptimization out_of_bounds_rzz 1 in_basis False
+GatesInBasis out_of_bounds_rzz 1 in_basis False
+WrapAngles out_of_bounds_rzz 0 in_basis False
+TwoQubitPeepholeOptimization out_of_bounds_rzz 1 in_basis False
+GatesInBasis out_of_bounds_rzz 1 in_basis False
+WrapAngles out_of_bounds_rzz 0 in_basis False
+compile_terminated True depth 32 size 111
+final_out_of_bounds_rzz 0

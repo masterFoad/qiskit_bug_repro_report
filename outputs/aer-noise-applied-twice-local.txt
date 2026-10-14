@@ -1,0 +1,7 @@
+qiskit 2.5.2 qiskit-aer 0.17.2
+small alone   counts={'0': 416, '1': 1584}
+              methods=['density_matrix'] diag(rho)=[0.2 0.8] trace=1.0000
+[small, big]  counts={'0': 416, '1': 1584}
+              methods=['density_matrix', 'statevector'] diag(rho)=[0.2 0.8] trace=1.0000
+[big, small]  counts={'0': 816, '1': 1184}
+              methods=['statevector', 'density_matrix'] diag(rho)=[0.4 1.6] trace=2.0000

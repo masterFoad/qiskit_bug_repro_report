@@ -1,0 +1,10 @@
+Python 3.14.6
+qiskit 2.5.2
+31 WRITE_OK bytes 586
+31 LOAD_OK 31
+32 WRITE_OK bytes 599
+32 LOAD_OK 32
+63 WRITE_OK bytes 1002
+63 LOAD_FAIL OverflowError out of range integral type conversion attempted
+127 WRITE_OK bytes 1834
+127 LOAD_FAIL OverflowError Python int too large to convert to C long

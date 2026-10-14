@@ -1,0 +1,6 @@
+qiskit 2.5.2
+1-qubit circuit, O0: ops={'rz': 1} lookalike rz left=1
+1-qubit circuit, O1: ops={'rz': 1} lookalike rz left=1
+1-qubit circuit, O2: ops={'rz': 1} lookalike rz left=1
+1-qubit circuit, O3: ops={'rz': 1} lookalike rz left=1
+operator of the user gate equals RZ(theta)? False

@@ -1,0 +1,6 @@
+qiskit 2.5.2
+target has angle bounds: True | if_else supported: True
+if_else{cx rz(0.4) cx} translation_method=default                     O2: out-of-bound rzz = [('top/if_else[0]', -0.4)]
+if_else{cx rz(0.4) cx} translation_method=default                     O3: out-of-bound rzz = [('top/if_else[0]', -0.4)]
+if_else{cx rz(0.4) cx} translation_method=ibm_dynamic_and_fractional  O2: out-of-bound rzz = []
+if_else{cx rz(0.4) cx} translation_method=ibm_dynamic_and_fractional  O3: out-of-bound rzz = []

@@ -1,0 +1,4 @@
+Python 3.14.6
+qiskit 2.5.2
+standard_ecr COMPILED {'rz': 8, 'sx': 4, 'ecr': 1}
+custom_ecr FAILED TranspilerError 'ecr would be supported on [Qubit(0), Qubit(1)] if the direction was swapped, but no rules are known to do that. ["cx", "cz", "ecr", "swap", "rzx", "rxx", "ryy", "rzz"] can be automatically flipped.'

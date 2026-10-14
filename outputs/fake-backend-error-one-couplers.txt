@@ -1,0 +1,28 @@
+python 3.14.6
+qiskit 2.5.2
+qiskit-ibm-runtime 0.50.0
+FakeFez two_qubit_entries 352 error_one_entries 14
+  cz (27, 28) error 1.0
+  cz (28, 27) error 1.0
+  cz (31, 32) error 1.0
+  cz (32, 31) error 1.0
+  cz (32, 33) error 1.0
+  cz (33, 32) error 1.0
+  cz (68, 69) error 1.0
+  cz (69, 68) error 1.0
+  cz (80, 81) error 1.0
+  cz (81, 80) error 1.0
+  cz (106, 107) error 1.0
+  cz (107, 106) error 1.0
+  cz (139, 155) error 1.0
+  cz (155, 139) error 1.0
+FakeSherbrooke two_qubit_entries 144 error_one_entries 9
+  ecr (6, 5) error 1.0
+  ecr (7, 6) error 1.0
+  ecr (8, 9) error 1.0
+  ecr (16, 8) error 1.0
+  ecr (56, 52) error 1.0
+  ecr (56, 57) error 1.0
+  ecr (83, 84) error 1.0
+  ecr (85, 84) error 1.0
+  ecr (92, 102) error 1.0

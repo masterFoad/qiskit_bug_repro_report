@@ -1,0 +1,7 @@
+Archived recheck on Linux x86_64, 2026-10-14
+python 3.12.13
+qiskit 2.7.0.dev0
+31 ROUNDTRIP_OK 31
+32 ROUNDTRIP_FAIL QpyError 'invalid instruction: Instruction has 32 but at most 31 are supported'
+63 ROUNDTRIP_FAIL QpyError 'invalid instruction: Instruction has 63 but at most 31 are supported'
+127 ROUNDTRIP_FAIL QpyError 'invalid instruction: Instruction has 127 but at most 31 are supported'

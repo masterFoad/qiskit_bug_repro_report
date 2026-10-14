@@ -1,0 +1,12 @@
+Python 3.14.6
+qiskit 2.5.2
+HalfAdder WRITE_OK bytes 241
+HalfAdder LOAD_FAIL TypeError HalfAdderGate.__init__() missing 1 required positional argument: 'num_state_qubits'
+ModularAdder WRITE_OK bytes 231
+ModularAdder LOAD_FAIL TypeError ModularAdderGate.__init__() missing 1 required positional argument: 'num_state_qubits'
+Multiplier WRITE_OK bytes 281
+Multiplier LOAD_FAIL TypeError MultiplierGate.__init__() missing 1 required positional argument: 'num_state_qubits'
+IntComp WRITE_OK bytes 223
+IntComp LOAD_FAIL TypeError IntegerComparatorGate.__init__() missing 2 required positional arguments: 'num_state_qubits' and 'value'
+LinPauliRot WRITE_OK bytes 226
+LinPauliRot LOAD_FAIL TypeError LinearPauliRotationsGate.__init__() missing 1 required positional argument: 'num_state_qubits'

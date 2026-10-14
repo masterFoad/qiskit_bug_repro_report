@@ -1,0 +1,22 @@
+qiskit 2.5.2
+target has angle bounds: True | if_else supported: True
+if_else{rzz(-pi/2)}        O0: out of bounds on 4/4 seeds [('top/if_else[0]', -1.570796)]
+if_else{rzz(-pi/2)}        O1: out of bounds on 4/4 seeds [('top/if_else[0]', -1.570796)]
+if_else{rzz(-pi/2)}        O2: out of bounds on 4/4 seeds [('top/if_else[0]', -1.570796)]
+if_else{rzz(-pi/2)}        O3: out of bounds on 4/4 seeds [('top/if_else[0]', -1.570796)]
+if_else{rzz(2.5)}          O0: out of bounds on 4/4 seeds [('top/if_else[0]', 2.5)]
+if_else{rzz(2.5)}          O1: out of bounds on 4/4 seeds [('top/if_else[0]', 2.5)]
+if_else{rzz(2.5)}          O2: out of bounds on 4/4 seeds [('top/if_else[0]', 2.5)]
+if_else{rzz(2.5)}          O3: out of bounds on 4/4 seeds [('top/if_else[0]', 2.5)]
+if_else{cx rz(0.4) cx}     O0: out of bounds on 0/4 seeds 
+if_else{cx rz(0.4) cx}     O1: out of bounds on 0/4 seeds 
+if_else{cx rz(0.4) cx}     O2: out of bounds on 4/4 seeds [('top/if_else[0]', -0.4)]
+if_else{cx rz(0.4) cx}     O3: out of bounds on 4/4 seeds [('top/if_else[0]', -0.4)]
+if_else{cz} (control)      O0: out of bounds on 0/4 seeds 
+if_else{cz} (control)      O1: out of bounds on 0/4 seeds 
+if_else{cz} (control)      O2: out of bounds on 0/4 seeds 
+if_else{cz} (control)      O3: out of bounds on 0/4 seeds 
+top-level rzz(-pi/2)       O0: out of bounds on 0/4 seeds 
+top-level rzz(-pi/2)       O1: out of bounds on 0/4 seeds 
+top-level rzz(-pi/2)       O2: out of bounds on 0/4 seeds 
+top-level rzz(-pi/2)       O3: out of bounds on 0/4 seeds 

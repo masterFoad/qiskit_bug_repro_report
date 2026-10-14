@@ -1,0 +1,4 @@
+Python 3.14.6
+qiskit 2.5.2
+static COMPILED {'h': 1, 'x': 1, 'measure': 1}
+if_else FAILED TranspilerError 'Unable to translate the operations in the circuit: {("h", 1), ("measure", 1), ("if_else", 1), ("x", 1)} to the backend\'s (or manually specified) target basis: {"id", "rz", "z", "y", "swap", "x", "dcx", "sxdg", "cy", "s", "ecr", "h", "tdg", "t", "cz", "sdg", "sx", "cx", "iswap", "measure", "reset", "barrier", "snapshot", "delay", "store"}

@@ -1,0 +1,7 @@
+python 3.14.6
+qiskit 2.5.2
+input_qubits 24 input_operations {'h': 194, 'cx': 67, 'ccx': 57, 'x': 12}
+runs 12 seed_transpiler 0
+rz_counts [397, 401, 399, 387, 395, 391, 392, 397, 395, 381, 397, 391]
+min 381 max 401 unique_counts 8
+stable False
