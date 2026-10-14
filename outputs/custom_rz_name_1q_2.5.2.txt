@@ -1,0 +1,6 @@
+qiskit 2.5.2
+1q circuit, O0: ops={'rz': 1} lookalike_left=1
+1q circuit, O1: ops={'rz': 1} lookalike_left=1
+1q circuit, O2: ops={'rz': 1} lookalike_left=1
+1q circuit, O3: ops={'rz': 1} lookalike_left=1
+intended (ry) vs executed-as-RZ equal? False

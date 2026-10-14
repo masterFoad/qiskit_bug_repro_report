@@ -1,0 +1,8 @@
+qiskit 2.4.2
+1q circuit, O0: ops={'rz': 1} lookalike_left=1
+1q circuit, O1: ops={'rz': 1} lookalike_left=1
+1q circuit, O2: ops={'rz': 1} lookalike_left=1
+1q circuit, O3: ops={'rz': 1} lookalike_left=1
+intended (ry) vs executed-as-RZ equal? False
+2q gadget on 27q ECR backend O2: 40/40 seeds leave lookalike rz in output
+2q gadget on 27q ECR backend O3: 40/40 seeds leave lookalike rz in output

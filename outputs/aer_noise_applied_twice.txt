@@ -1,0 +1,7 @@
+qiskit 2.5.2 aer 0.17.2
+dm alone  counts={'0': 416, '1': 1584}
+    methods=['density_matrix'] diag=[0.2 0.8] trace=1.0000
+[dm, sv]  counts={'0': 416, '1': 1584}
+    methods=['density_matrix', 'statevector'] diag=[0.2 0.8] trace=1.0000
+[sv, dm]  counts={'0': 816, '1': 1184}
+    methods=['statevector', 'density_matrix'] diag=[0.4 1.6] trace=2.0000
