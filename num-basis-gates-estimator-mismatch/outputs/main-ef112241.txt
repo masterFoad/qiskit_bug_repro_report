@@ -1,0 +1,5 @@
+qiskit 2.7.0.dev0
+python 3.13.14 platform darwin
+h_then_swap predicted 0 actual 3 equiv True MISMATCH
+swap predicted 3 actual 3 equiv True MATCH
+four_alternating_cx predicted 2 actual 2 equiv True MATCH

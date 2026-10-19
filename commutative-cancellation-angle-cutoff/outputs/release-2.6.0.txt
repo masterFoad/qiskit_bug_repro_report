@@ -1,0 +1,6 @@
+qiskit 2.6.0
+python 3.13.14 platform darwin
+single_pass {} equiv False distance 6e-05 REPRODUCED
+control_single_rz {'rz': 1} equiv True
+preset 2 {'cx': 2} equiv False distance 6e-05 REPRODUCED
+preset 3 {'cx': 2} equiv False distance 6e-05 REPRODUCED

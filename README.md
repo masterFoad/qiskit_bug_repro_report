@@ -1,16 +1,18 @@
 # Qiskit bug reproductions
 
-Minimal, standalone reproductions of eleven observed problems in Qiskit, Qiskit Aer, and
+Minimal, standalone reproductions of sixteen observed problems in Qiskit, Qiskit Aer, and
 qiskit-ibm-runtime: wrong or hardware-invalid results, compilation and serialization failures,
 misleading fake-backend calibration entries, repeated synthesis work, and seeded metric drift.
 Each item has a short script, the output we observed, and the versions tested. Related upstream
-issues are linked below (searches checked on 2026-10-14). Bugs 2 and 4 demonstrate a reserved-name
+issues are linked below (the 2026-10-14 searches cover items 1-11; search context for
+items 12-16 is described in their folder READMEs). Bugs 2 and 4 demonstrate a reserved-name
 contract trap; they are not established defects for supported custom-gate names. Bug 8 also uses
-a reserved name.
+a reserved name. Items 12-16 add current commutation and gate-count-estimator findings;
+item 14 also exposes reserved-name assumptions.
 
 ## TL;DR
 
-| # | Bug | Library | Effect | Status on latest release |
+| # | Item | Library | Effect | Status as tested |
 |---|---|---|---|---|
 | 1 | [Noise applied twice in a density-matrix circuit that follows a statevector circuit](#1-aer-noise-applied-twice) | qiskit-aer | Silent wrong result: trace(rho) = 2 | Broken in 0.17.2 and on main |
 | 2 | [A custom gate named `rz` is kept as the native `rz`](#2-custom-gate-named-rz-kept-as-native-rz) | qiskit | Silent wrong result on hardware | Broken in 2.5.2 (also 2.4.2) |
@@ -23,6 +25,15 @@ a reserved name.
 | 9 | [IBM fake backends advertise couplers with error 1.0](#9-ibm-fake-backends-advertise-couplers-with-error-10) | qiskit-ibm-runtime | Target contains unusable calibration entries | Present in 0.50.0 |
 | 10 | [O3 repeatedly emits out-of-bounds rzz and retranslates](#10-o3-repeatedly-emits-out-of-bounds-rzz-and-retranslates) | qiskit | Extra synthesis work; compilation terminates | Broken in 2.5.2 |
 | 11 | [Seeded synthesis is not run-to-run deterministic](#11-seeded-synthesis-is-not-run-to-run-deterministic) | qiskit | Same seed produces different RZ counts | Broken in 2.5.2 |
+| 12 | [CommutativeCancellation removes a non-identity merged rotation](commutative-cancellation-angle-cutoff/) | qiskit | Non-equivalent at O2/O3 (6e-5 operator distance; seed 1, no sweep) | Reproduced in 2.6.0 and main ef112241 |
+| 13 | [Near-identity rotations bypass checks for non-unitary instructions](commutation-near-identity-before-precheck/) | qiskit | Non-unitary instructions get a unitary shortcut | Reproduced in 2.6.0 and main ef112241 |
+| 14 | [The commutation library trusts a custom gate's standard name](commutation-library-name-collision/) | qiskit | Reserved-name custom gate can be reordered incorrectly | Reproduced in 2.6.0 and main ef112241; design issue |
+| 15 | [check_commutation_entries raises AttributeError](check-commutation-entries-attribute-error/) | qiskit | Method on the public session checker raises AttributeError | Reproduced in 2.6.0 and main ef112241 |
+| 16 | [num_basis_gates disagrees with its decomposition](num-basis-gates-estimator-mismatch/) | qiskit | Estimate 0 CX for H;SWAP, equivalent synthesis emits 3 | Reproduced in 2.6.0 and main ef112241; diagnosed, unpatched |
+
+Items 1-11 retain their published test scope; they were not revalidated in the 2026-10-19 addition.
+`CHANGES.md` covers that earlier 1-11 preparation only; the 12-16 section records this addition's
+separate runtime and private-API diagnostic scope.
 
 ## Contents
 
@@ -39,6 +50,9 @@ a reserved name.
 - [9. IBM fake backends advertise couplers with error 1.0](#9-ibm-fake-backends-advertise-couplers-with-error-10)
 - [10. O3 repeatedly emits out-of-bounds rzz and retranslates](#10-o3-repeatedly-emits-out-of-bounds-rzz-and-retranslates)
 - [11. Seeded synthesis is not run-to-run deterministic](#11-seeded-synthesis-is-not-run-to-run-deterministic)
+- [12-16. Commutation and decomposition findings](#12-16-commutation-and-decomposition-findings)
+- [CommutationChecker findings and limits](commutation-checker-findings.md)
+- [Reproducing the current main build](#reproducing-the-current-main-build)
 - [Related items already fixed upstream](#related-items-already-fixed-upstream)
 - [Repository layout](#repository-layout)
 
@@ -53,15 +67,18 @@ Original outputs for bugs 1-3 were produced on Linux x86_64 with:
 | qiskit-aer | 0.17.2 |
 | qiskit-ibm-runtime | 0.50.0 (only for the `FakeFez` target in bug 3) |
 
-All eleven primary scripts were run locally; the new outputs were regenerated on macOS arm64 with Python 3.14.6,
+For items 1-11, all primary scripts were run locally; those outputs were regenerated
+on macOS arm64 with Python 3.14.6,
 Qiskit 2.5.2, Aer 0.17.2, and qiskit-ibm-runtime 0.50.0. The Clifford+T comparison was also run
 locally on Qiskit 2.3.1. Every local script run had a 240-second timeout and completed in under
 30 seconds, with at most two native numerical threads and one Qiskit process.
 
 Files ending in `-recheck.txt` preserve earlier Linux x86_64 comparisons on Python 3.12.13.
-The checked main is Qiskit 2.7.0.dev0 at `c841572607fb4db230f1cf4ba5488a3b7cd98f86`
-(as of 2026-10-14); it was not built locally. Full local dependency versions and the comparison
-versions are in [`outputs/versions.txt`](outputs/versions.txt).
+For items 1-11, the checked main is Qiskit 2.7.0.dev0 at
+`c841572607fb4db230f1cf4ba5488a3b7cd98f86` (2026-10-14); it was not built locally.
+Their local dependency and comparison versions are in [`outputs/versions.txt`](outputs/versions.txt).
+Items 12-16 use release 2.6.0 and locally built main 2.7.0.dev0 at
+`ef11224130eecc78d46e3b84f11e2155a5cb6556` (2026-10-19), with Python 3.13.14.
 
 ## How to run
 
@@ -85,9 +102,24 @@ python o3-rzz-retranslation/repro.py
 python seeded-synthesis-nondeterminism/repro.py
 ```
 
-Each script prints its package versions first, then the results. New scripts also print Python.
+Each script prints its package versions first, then the results. The added scripts for
+items 4-11, and the separate scripts for 12-16, also print Python.
 Expected failures are caught and printed without a traceback; a successful process exit does not mean
 the defect is fixed. No account or hardware access is needed.
+
+The five additional items use a separate Qiskit-only environment:
+
+```bash
+python3 -m venv ./venv-2.6 && . venv-2.6/bin/activate
+pip install "qiskit==2.6.0"
+export QISKIT_NUM_PROCS=1 OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2
+python commutative-cancellation-angle-cutoff/repro.py
+python commutation-near-identity-before-precheck/repro.py
+python commutation-library-name-collision/repro.py
+python check-commutation-entries-attribute-error/repro.py
+python num-basis-gates-estimator-mismatch/repro.py
+python num-basis-gates-estimator-mismatch/diagnose.py
+```
 
 ---
 
@@ -458,6 +490,46 @@ It is not a verified fix for this witness.
 
 ---
 
+## 12-16. Commutation and decomposition findings
+
+Items 12-16 were run on release Qiskit 2.6.0 and a fresh source build at
+`ef11224130eecc78d46e3b84f11e2155a5cb6556` (2026-10-19). Each item folder has
+its own README, standalone script and release/main outputs. Stored runs used
+Python 3.13.14 on macOS arm64; the main build reports Qiskit 2.7.0.dev0.
+We did not record run times or thread counts for these items. The commands above
+limit numerical threads and Qiskit processes for reruns.
+SHA-256 of the compiled Qiskit extension used:
+`6ad1fcd9daff14bc821e94dc4d3542c17ba5b6e0cf9fc2ed9c465d4f36b04780`.
+
+Item 12 removes a non-identity rotation using a fixed cutoff that ignores the pass's
+`approximation_degree` setting; item 15 raises through a broken wrapper.
+In item 13 a shortcut runs before the check that excludes measurements, resets
+and barriers.
+Item 14 is a reserved-name design issue, like the published custom-name items.
+Item 16 is a diagnosed estimator inconsistency; synthesis is equivalent, and
+the proposed coordinate-source repair remains unpatched. Its private-API
+`diagnose.py` provides Weyl, invariant, 0/1/2/3-CX and global-phase controls;
+`repro.py` uses public APIs only.
+
+The [CommutationChecker findings note](commutation-checker-findings.md) distinguishes
+historical single-machine tolerance, symbolic and timing measurements from
+these fresh reproductions. Proposed fixes are unpatched directions, not tested
+Qiskit source changes.
+
+## Reproducing the current main build
+
+```bash
+git clone https://github.com/Qiskit/qiskit.git /tmp/qiskit-main
+git -C /tmp/qiskit-main checkout ef11224130eecc78d46e3b84f11e2155a5cb6556
+python3 -m venv /tmp/qiskit-main/.venv
+/tmp/qiskit-main/.venv/bin/pip install /tmp/qiskit-main
+/tmp/qiskit-main/.venv/bin/python commutative-cancellation-angle-cutoff/repro.py
+```
+
+Building Qiskit requires Rust. Native-extension hashes vary with platform and
+toolchain; the hash above binds the stored macOS build. Published items 1-11
+retain their earlier main pin and version evidence.
+
 ## Related items already fixed upstream
 
 | Item | Where it was fixed |
@@ -480,5 +552,11 @@ fake-backend-error-one-couplers/repro.py
 o3-rzz-retranslation/repro.py
 seeded-synthesis-nondeterminism/repro.py
 CHANGES.md          review notes and validation deviations
+commutative-cancellation-angle-cutoff/             README, repro.py, outputs/
+commutation-near-identity-before-precheck/          README, repro.py, outputs/
+commutation-library-name-collision/                README, repro.py, outputs/
+check-commutation-entries-attribute-error/          README, repro.py, outputs/
+num-basis-gates-estimator-mismatch/                README, repro.py, diagnose.py, outputs/
+commutation-checker-findings.md
 outputs/            observed outputs and versions.txt
 ```

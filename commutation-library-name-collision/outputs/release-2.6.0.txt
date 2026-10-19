@@ -1,0 +1,4 @@
+qiskit 2.6.0
+python 3.13.14 platform darwin
+checker_says_commutes True exact_commutator_norm 1.41421356
+pass_output {'z': 1} equiv False REPRODUCED

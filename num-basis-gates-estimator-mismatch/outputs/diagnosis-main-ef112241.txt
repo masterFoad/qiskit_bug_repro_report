@@ -1,0 +1,14 @@
+qiskit 2.7.0.dev0
+python 3.13.14 platform darwin
+identity estimate= 0 estimate_from_synthesis_weyl= 0 actual= 0 equiv= True rank= 1 coordinates= [0. 0. 0.] decomposition_coordinates= [0. 0. 0.] makhlin= [1.+0.j 3.+0.j]
+cx estimate= 1 estimate_from_synthesis_weyl= 1 actual= 1 equiv= True rank= 2 coordinates= [0.78539816 0.         0.        ] decomposition_coordinates= [0.78539816 0.         0.        ] makhlin= [-0.-0.j  1.-0.j]
+dcnot estimate= 2 estimate_from_synthesis_weyl= 2 actual= 2 equiv= True rank= 4 coordinates= [0.78539816 0.78539816 0.        ] decomposition_coordinates= [0.78539816 0.78539816 0.        ] makhlin= [ 0.+0.j -1.+0.j]
+swap estimate= 3 estimate_from_synthesis_weyl= 3 actual= 3 equiv= True rank= 4 coordinates= [0.78539816 0.78539816 0.78539816] decomposition_coordinates= [0.78539816 0.78539816 0.78539816] makhlin= [-1.-0.j -3.-0.j]
+h_swap estimate= 0 estimate_from_synthesis_weyl= 3 actual= 3 equiv= True rank= 4 coordinates= [0. 0. 0.] decomposition_coordinates= [0.78539816 0.78539816 0.78539816] makhlin= [-1.-0.j -3.-0.j]
+swap_h estimate= 0 estimate_from_synthesis_weyl= 3 actual= 3 equiv= True rank= 4 coordinates= [0. 0. 0.] decomposition_coordinates= [0.78539816 0.78539816 0.78539816] makhlin= [-1.-0.j -3.-0.j]
+rz_swap estimate= 3 estimate_from_synthesis_weyl= 3 actual= 3 equiv= True rank= 4 coordinates= [0.78539816 0.78539816 0.78539816] decomposition_coordinates= [0.78539816 0.78539816 0.78539816] makhlin= [-1.+0.j -3.+0.j]
+h_swap_matches_swap_makhlin= True
+h_swap_rank_excludes_zero_cx= True
+phase= 0.0 estimate= 0 coords= [0. 0. 0.]
+phase= 0.1 estimate= 3 coords= [0.78539816 0.78539816 0.78539816]
+phase= 1.0 estimate= 3 coords= [0.78539816 0.78539816 0.78539816]
