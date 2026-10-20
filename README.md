@@ -10,28 +10,40 @@ contract trap; they are not established defects for supported custom-gate names.
 a reserved name. Items 12-16 add current commutation and gate-count-estimator findings;
 item 14 also exposes reserved-name assumptions.
 
+## Start here: three to look at first
+
+Chosen for impact and because each is quick to explain: a silently wrong compiled circuit, a compiled circuit that is
+invalid for the device, and a regression with a candidate fix. The full list below is in suggested priority order.
+
+| Rank | # | Item | Why first |
+|---|---|---|---|
+| 1 | 12 | [CommutativeCancellation removes a non-identity merged rotation](commutative-cancellation-angle-cutoff/) | Silent non-equivalent output in default optimization levels 2 and 3 |
+| 2 | 3 | [`rzz` angles inside control-flow bodies are not brought into the target's bounds](#3-rzz-angle-bounds-not-enforced-inside-control-flow) | Compiled dynamic circuits are invalid on fractional-gate targets |
+| 3 | 5 | [Clifford+T translation fails on control flow](#5-cliffordt-translation-fails-on-control-flow) | Regression since 2.4.0: dynamic circuits cannot be compiled to Clifford+T |
+
 ## TL;DR
 
-| # | Item | Library | Effect | Status as tested |
-|---|---|---|---|---|
-| 1 | [Noise applied twice in a density-matrix circuit that follows a statevector circuit](#1-aer-noise-applied-twice) | qiskit-aer | Silent wrong result: trace(rho) = 2 | Broken in 0.17.2 and on main |
-| 2 | [A custom gate named `rz` is kept as the native `rz`](#2-custom-gate-named-rz-kept-as-native-rz) | qiskit | Silent wrong result on hardware | Broken in 2.5.2 (also 2.4.2) |
-| 3 | [`rzz` angles inside control-flow bodies are not brought into the target's bounds](#3-rzz-angle-bounds-not-enforced-inside-control-flow) | qiskit | Output is invalid for fractional-gate targets | Broken in 2.5.2 |
-| 4 | [A custom gate named `cx` is kept as the native `cx`](#4-custom-gate-named-cx-kept-as-native-cx) | qiskit | Native-device semantics differ from the definition | Observed in 2.5.2; reserved-name contract |
-| 5 | [Clifford+T translation fails on control flow](#5-cliffordt-translation-fails-on-control-flow) | qiskit | Compilation raises TranspilerError | Broken since 2.4.0; works on 2.3.1 |
-| 6 | [QPY writes arithmetic gates but cannot read them](#6-qpy-writes-arithmetic-gates-but-cannot-read-them) | qiskit | Saved circuits cannot be loaded | Broken in 2.5.2 |
-| 7 | [QPY cannot read wide MCX gates](#7-qpy-cannot-read-wide-mcx-gates) | qiskit | Wide controlled gates cannot be loaded | 63/127 fail in 2.5.2; 32 also fails on checked main |
-| 8 | [GateDirection raises on a reversed custom ECR](#8-gatedirection-raises-on-a-reversed-custom-ecr) | qiskit | Compilation raises TranspilerError | Broken in 2.5.2 |
-| 9 | [IBM fake backends advertise couplers with error 1.0](#9-ibm-fake-backends-advertise-couplers-with-error-10) | qiskit-ibm-runtime | Target contains unusable calibration entries | Present in 0.50.0 |
-| 10 | [O3 repeatedly emits out-of-bounds rzz and retranslates](#10-o3-repeatedly-emits-out-of-bounds-rzz-and-retranslates) | qiskit | Extra synthesis work; compilation terminates | Broken in 2.5.2 |
-| 11 | [Seeded synthesis is not run-to-run deterministic](#11-seeded-synthesis-is-not-run-to-run-deterministic) | qiskit | Same seed produces different RZ counts | Broken in 2.5.2 |
-| 12 | [CommutativeCancellation removes a non-identity merged rotation](commutative-cancellation-angle-cutoff/) | qiskit | Non-equivalent at O2/O3 (6e-5 operator distance; seed 1, no sweep) | Reproduced in 2.6.0 and main ef112241 |
-| 13 | [Near-identity rotations bypass checks for non-unitary instructions](commutation-near-identity-before-precheck/) | qiskit | Non-unitary instructions get a unitary shortcut | Reproduced in 2.6.0 and main ef112241 |
-| 14 | [The commutation library trusts a custom gate's standard name](commutation-library-name-collision/) | qiskit | Reserved-name custom gate can be reordered incorrectly | Reproduced in 2.6.0 and main ef112241; design issue |
-| 15 | [check_commutation_entries raises AttributeError](check-commutation-entries-attribute-error/) | qiskit | Method on the public session checker raises AttributeError | Reproduced in 2.6.0 and main ef112241 |
-| 16 | [num_basis_gates disagrees with its decomposition](num-basis-gates-estimator-mismatch/) | qiskit | Estimate 0 CX for H;SWAP, equivalent synthesis emits 3 | Reproduced in 2.6.0 and main ef112241; diagnosed, unpatched |
-| 17 | [Same seed can produce different initial layouts](layout-initial-layout-variability/) | qiskit | Fixed-environment initial placement varies for one 16q fixture | Observed in 2.6.0 and recorded main f702690; reproducibility issue |
-| 18 | [Exact-fidelity options still permit tiny-angle approximation](two-qubit-basis-decomposer-exact-fidelity/) | qiskit | CP(1e-4) emits 0 CX with infidelity about 5e-10, even with approximate=False | Observed in 2.6.0 and recorded main f702690; API behavior issue |
+All eighteen items, in suggested priority order (most important first). The `#` column keeps each item's
+original number, which the section headings and folders below use.
+
+| Priority | # | Item | Library | Effect | Status as tested |
+|---|---|---|---|---|---|
+| 1 | 12 | [CommutativeCancellation removes a non-identity merged rotation](commutative-cancellation-angle-cutoff/) | qiskit | Non-equivalent at O2/O3 (6e-5 operator distance; seed 1, no sweep) | Reproduced in 2.6.0 and main ef112241 |
+| 2 | 3 | [`rzz` angles inside control-flow bodies are not brought into the target's bounds](#3-rzz-angle-bounds-not-enforced-inside-control-flow) | qiskit | Output is invalid for fractional-gate targets | Broken in 2.5.2 |
+| 3 | 5 | [Clifford+T translation fails on control flow](#5-cliffordt-translation-fails-on-control-flow) | qiskit | Compilation raises TranspilerError | Broken since 2.4.0; works on 2.3.1 |
+| 6 | 7 | [QPY cannot read wide MCX gates](#7-qpy-cannot-read-wide-mcx-gates) | qiskit | Wide controlled gates cannot be loaded | 63/127 fail in 2.5.2; 32 also fails on checked main |
+| 7 | 16 | [num_basis_gates disagrees with its decomposition](num-basis-gates-estimator-mismatch/) | qiskit | Estimate 0 CX for H;SWAP, equivalent synthesis emits 3 | Reproduced in 2.6.0 and main ef112241; diagnosed, unpatched |
+| 8 | 13 | [Near-identity rotations bypass checks for non-unitary instructions](commutation-near-identity-before-precheck/) | qiskit | Non-unitary instructions get a unitary shortcut | Reproduced in 2.6.0 and main ef112241 |
+| 9 | 17 | [Same seed can produce different initial layouts](layout-initial-layout-variability/) | qiskit | Fixed-environment initial placement varies for one 16q fixture | Observed in 2.6.0 and recorded main f702690; reproducibility issue |
+| 10 | 11 | [Seeded synthesis is not run-to-run deterministic](#11-seeded-synthesis-is-not-run-to-run-deterministic) | qiskit | Same seed produces different RZ counts | Broken in 2.5.2 |
+| 11 | 2 | [A custom gate named `rz` is kept as the native `rz`](#2-custom-gate-named-rz-kept-as-native-rz) | qiskit | Silent wrong result on hardware | Broken in 2.5.2 (also 2.4.2) |
+| 12 | 14 | [The commutation library trusts a custom gate's standard name](commutation-library-name-collision/) | qiskit | Reserved-name custom gate can be reordered incorrectly | Reproduced in 2.6.0 and main ef112241; design issue |
+| 13 | 4 | [A custom gate named `cx` is kept as the native `cx`](#4-custom-gate-named-cx-kept-as-native-cx) | qiskit | Native-device semantics differ from the definition | Observed in 2.5.2; reserved-name contract |
+| 14 | 9 | [IBM fake backends advertise couplers with error 1.0](#9-ibm-fake-backends-advertise-couplers-with-error-10) | qiskit-ibm-runtime | Target contains unusable calibration entries | Present in 0.50.0 |
+| 15 | 10 | [O3 repeatedly emits out-of-bounds rzz and retranslates](#10-o3-repeatedly-emits-out-of-bounds-rzz-and-retranslates) | qiskit | Extra synthesis work; compilation terminates | Broken in 2.5.2 |
+| 16 | 8 | [GateDirection raises on a reversed custom ECR](#8-gatedirection-raises-on-a-reversed-custom-ecr) | qiskit | Compilation raises TranspilerError | Broken in 2.5.2 |
+| 17 | 18 | [Exact-fidelity options still permit tiny-angle approximation](two-qubit-basis-decomposer-exact-fidelity/) | qiskit | CP(1e-4) emits 0 CX with infidelity about 5e-10, even with approximate=False | Observed in 2.6.0 and recorded main f702690; API behavior issue |
+| 18 | 15 | [check_commutation_entries raises AttributeError](check-commutation-entries-attribute-error/) | qiskit | Method on the public session checker raises AttributeError | Reproduced in 2.6.0 and main ef112241 |
 
 Items 1-11 retain their published test scope; they were not revalidated in the 2026-10-19 addition.
 `CHANGES.md` covers that earlier 1-11 preparation only; the 12-16 section records this addition's
@@ -39,6 +51,7 @@ separate runtime and private-API diagnostic scope.
 
 ## Contents
 
+- [Start here: five to look at first](#start-here-three-to-look-at-first)
 - [Environment](#environment)
 - [How to run](#how-to-run)
 - [1. Aer: noise applied twice](#1-aer-noise-applied-twice)
