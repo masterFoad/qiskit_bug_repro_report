@@ -21,6 +21,11 @@ invalid for the device, and a regression with a candidate fix. The full list bel
 | 2 | 3 | [`rzz` angles inside control-flow bodies are not brought into the target's bounds](#3-rzz-angle-bounds-not-enforced-inside-control-flow) | Compiled dynamic circuits are invalid on fractional-gate targets |
 | 3 | 5 | [Clifford+T translation fails on control flow](#5-cliffordt-translation-fails-on-control-flow) | Regression since 2.4.0: dynamic circuits cannot be compiled to Clifford+T |
 
+Also worth a look:
+
+- **#6** [QPY writes arithmetic gates but cannot read them](#6-qpy-writes-arithmetic-gates-but-cannot-read-them): saved circuits cannot be loaded back.
+- **#1** [Noise applied twice in a density-matrix circuit that follows a statevector circuit](#1-aer-noise-applied-twice): silent wrong simulation results (`trace(rho) = 2`); this one is in qiskit-aer.
+
 ## TL;DR
 
 All eighteen items, in suggested priority order (most important first). The `#` column keeps each item's
