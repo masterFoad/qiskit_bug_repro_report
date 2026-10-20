@@ -1,0 +1,232 @@
+{
+  "baseline_initial_layouts": [
+    {
+      "initial_layout": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          8,
+          15
+        ],
+        [
+          9,
+          14
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          12,
+          5
+        ],
+        [
+          13,
+          10
+        ],
+        [
+          14,
+          6
+        ],
+        [
+          15,
+          8
+        ]
+      ],
+      "trial": 1
+    },
+    {
+      "initial_layout": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          8,
+          15
+        ],
+        [
+          9,
+          14
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          5
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          13,
+          6
+        ],
+        [
+          14,
+          12
+        ],
+        [
+          15,
+          8
+        ]
+      ],
+      "trial": 2
+    },
+    {
+      "initial_layout": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          8,
+          15
+        ],
+        [
+          9,
+          14
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          6
+        ],
+        [
+          12,
+          12
+        ],
+        [
+          13,
+          5
+        ],
+        [
+          14,
+          10
+        ],
+        [
+          15,
+          8
+        ]
+      ],
+      "trial": 3
+    }
+  ],
+  "environment": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONHASHSEED": "0",
+    "QISKIT_NUM_PROCS": "1",
+    "QISKIT_PARALLEL": "false",
+    "RAYON_NUM_THREADS": "1"
+  },
+  "execution_status": "COMPLETED_VALID_JSON",
+  "fixture_hashes": {
+    "input_sha256": "a72cee57aafcfa75737ac8c3188489c30b09eac4b6130dc8cacc42625031caaf",
+    "target_sha256": "0cc8128bb665d19fa53c25e92d76ae43e39462bfe19b0e534eb1741e96cf957e"
+  },
+  "interpreter": "CPython 3.13 venv with qiskit==2.6.0",
+  "layouts_distinct": 3,
+  "raw_log_sha256": "e533e9609e8aed4e99b640faef1f3be1a06ecc08d926698e64c96201d7978a9d",
+  "reported_version": "2.6.0",
+  "schema": 1,
+  "shell_exit_code": "NOT_RETAINED:post-command zsh reserved-variable error after child completion",
+  "timeout_seconds": 180
+}

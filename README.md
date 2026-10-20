@@ -1,6 +1,6 @@
 # Qiskit bug reproductions
 
-Minimal, standalone reproductions of sixteen observed problems in Qiskit, Qiskit Aer, and
+Minimal, standalone reproductions of eighteen observed problems in Qiskit, Qiskit Aer, and
 qiskit-ibm-runtime: wrong or hardware-invalid results, compilation and serialization failures,
 misleading fake-backend calibration entries, repeated synthesis work, and seeded metric drift.
 Each item has a short script, the output we observed, and the versions tested. Related upstream
@@ -30,6 +30,8 @@ item 14 also exposes reserved-name assumptions.
 | 14 | [The commutation library trusts a custom gate's standard name](commutation-library-name-collision/) | qiskit | Reserved-name custom gate can be reordered incorrectly | Reproduced in 2.6.0 and main ef112241; design issue |
 | 15 | [check_commutation_entries raises AttributeError](check-commutation-entries-attribute-error/) | qiskit | Method on the public session checker raises AttributeError | Reproduced in 2.6.0 and main ef112241 |
 | 16 | [num_basis_gates disagrees with its decomposition](num-basis-gates-estimator-mismatch/) | qiskit | Estimate 0 CX for H;SWAP, equivalent synthesis emits 3 | Reproduced in 2.6.0 and main ef112241; diagnosed, unpatched |
+| 17 | [Same seed can produce different initial layouts](layout-initial-layout-variability/) | qiskit | Fixed-environment initial placement varies for one 16q fixture | Observed in 2.6.0 and recorded main f702690; reproducibility issue |
+| 18 | [Exact-fidelity options still permit tiny-angle approximation](two-qubit-basis-decomposer-exact-fidelity/) | qiskit | CP(1e-4) emits 0 CX with infidelity about 5e-10, even with approximate=False | Observed in 2.6.0 and recorded main f702690; API behavior issue |
 
 Items 1-11 retain their published test scope; they were not revalidated in the 2026-10-19 addition.
 `CHANGES.md` covers that earlier 1-11 preparation only; the 12-16 section records this addition's
@@ -51,6 +53,7 @@ separate runtime and private-API diagnostic scope.
 - [10. O3 repeatedly emits out-of-bounds rzz and retranslates](#10-o3-repeatedly-emits-out-of-bounds-rzz-and-retranslates)
 - [11. Seeded synthesis is not run-to-run deterministic](#11-seeded-synthesis-is-not-run-to-run-deterministic)
 - [12-16. Commutation and decomposition findings](#12-16-commutation-and-decomposition-findings)
+- [17-18. Initial layout and exact-fidelity synthesis](#17-18-initial-layout-and-exact-fidelity-synthesis)
 - [CommutationChecker findings and limits](commutation-checker-findings.md)
 - [Reproducing the current main build](#reproducing-the-current-main-build)
 - [Related items already fixed upstream](#related-items-already-fixed-upstream)
@@ -515,6 +518,22 @@ The [CommutationChecker findings note](commutation-checker-findings.md) distingu
 historical single-machine tolerance, symbolic and timing measurements from
 these fresh reproductions. Proposed fixes are unpatched directions, not tested
 Qiskit source changes.
+
+## 17-18. Initial layout and exact-fidelity synthesis
+
+Items 17 and 18 were checked on Qiskit 2.6.0 and a recorded main runtime at
+`f70269034d2ec07699d6c69e33594273c73f8df2` with CPython 3.13.14 on macOS arm64.
+Their folder READMEs give standalone commands, selected release/main outputs and
+source and runtime hashes. The main evidence uses the built native extension with
+the Python sources copied from main f702690, as stated in each runtime details file.
+Other items keep their original test scope.
+
+Item 17 records three distinct initial layouts for one fixed circuit and Target
+under seed 1 and a fixed single-thread environment. Item 18 records tiny-angle
+approximation despite `basis_fidelity=1.0` and `approximate=False`, with a direct
+Weyl specialization control. They are reproducibility and API behavior issues;
+no source fixes or new timing claims are included. Upstream duplicate searches
+for these two additions have not been performed.
 
 ## Reproducing the current main build
 

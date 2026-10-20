@@ -1,0 +1,86 @@
+{
+  "controls": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONHASHSEED": "0",
+    "QISKIT_NUM_PROCS": "1",
+    "QISKIT_PARALLEL": "false",
+    "RAYON_NUM_THREADS": "1"
+  },
+  "cpu_count": 10,
+  "id": "general-anchor:depth_4gt10-v1_81:line:L2:s1",
+  "schema": 1,
+  "trials": [
+    {
+      "diffs": [
+        {
+          "baseline_input_index": 5,
+          "physical": 11,
+          "prefix_input_index": 12
+        },
+        {
+          "baseline_input_index": 10,
+          "physical": 12,
+          "prefix_input_index": 5
+        },
+        {
+          "baseline_input_index": 6,
+          "physical": 13,
+          "prefix_input_index": 10
+        },
+        {
+          "baseline_input_index": 12,
+          "physical": 14,
+          "prefix_input_index": 6
+        }
+      ],
+      "trial": 1
+    },
+    {
+      "diffs": [
+        {
+          "baseline_input_index": 5,
+          "physical": 11,
+          "prefix_input_index": 12
+        },
+        {
+          "baseline_input_index": 12,
+          "physical": 12,
+          "prefix_input_index": 5
+        },
+        {
+          "baseline_input_index": 10,
+          "physical": 13,
+          "prefix_input_index": 6
+        },
+        {
+          "baseline_input_index": 6,
+          "physical": 14,
+          "prefix_input_index": 10
+        }
+      ],
+      "trial": 2
+    },
+    {
+      "diffs": [
+        {
+          "baseline_input_index": 10,
+          "physical": 12,
+          "prefix_input_index": 5
+        },
+        {
+          "baseline_input_index": 5,
+          "physical": 13,
+          "prefix_input_index": 12
+        },
+        {
+          "baseline_input_index": 12,
+          "physical": 14,
+          "prefix_input_index": 10
+        }
+      ],
+      "trial": 3
+    }
+  ]
+}
