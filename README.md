@@ -12,14 +12,14 @@ item 14 also exposes reserved-name assumptions.
 
 ## Start here: three to look at first
 
-Chosen for impact and because each is quick to explain: a silently wrong compiled circuit, a compiled circuit that is
-invalid for the device, and a regression with a candidate fix. The full list below is in suggested priority order.
+Chosen for impact and because each is quick to explain: a silently wrong compiled circuit, a regression with a candidate fix,
+and a compiled circuit that is invalid for the device. The full list below is in suggested priority order.
 
 | Rank | # | Item | Why first |
 |---|---|---|---|
 | 1 | 12 | [CommutativeCancellation removes a non-identity merged rotation](commutative-cancellation-angle-cutoff/) | Silent non-equivalent output in default optimization levels 2 and 3 |
-| 2 | 3 | [`rzz` angles inside control-flow bodies are not brought into the target's bounds](#3-rzz-angle-bounds-not-enforced-inside-control-flow) | Compiled dynamic circuits are invalid on fractional-gate targets |
-| 3 | 5 | [Clifford+T translation fails on control flow](#5-cliffordt-translation-fails-on-control-flow) | Regression since 2.4.0: dynamic circuits cannot be compiled to Clifford+T |
+| 2 | 5 | [Clifford+T translation fails on control flow](#5-cliffordt-translation-fails-on-control-flow) | Regression since 2.4.0: dynamic circuits cannot be compiled to Clifford+T |
+| 3 | 3 | [`rzz` angles inside control-flow bodies are not brought into the target's bounds](#3-rzz-angle-bounds-not-enforced-inside-control-flow) | Compiled dynamic circuits are invalid on fractional-gate targets |
 
 Also worth a look:
 
@@ -34,8 +34,10 @@ original number, which the section headings and folders below use.
 | Priority | # | Item | Library | Effect | Status as tested |
 |---|---|---|---|---|---|
 | 1 | 12 | [CommutativeCancellation removes a non-identity merged rotation](commutative-cancellation-angle-cutoff/) | qiskit | Non-equivalent at O2/O3 (6e-5 operator distance; seed 1, no sweep) | Reproduced in 2.6.0 and main ef112241 |
-| 2 | 3 | [`rzz` angles inside control-flow bodies are not brought into the target's bounds](#3-rzz-angle-bounds-not-enforced-inside-control-flow) | qiskit | Output is invalid for fractional-gate targets | Broken in 2.5.2 |
-| 3 | 5 | [Clifford+T translation fails on control flow](#5-cliffordt-translation-fails-on-control-flow) | qiskit | Compilation raises TranspilerError | Broken since 2.4.0; works on 2.3.1 |
+| 2 | 5 | [Clifford+T translation fails on control flow](#5-cliffordt-translation-fails-on-control-flow) | qiskit | Compilation raises TranspilerError | Broken since 2.4.0; works on 2.3.1 |
+| 3 | 3 | [`rzz` angles inside control-flow bodies are not brought into the target's bounds](#3-rzz-angle-bounds-not-enforced-inside-control-flow) | qiskit | Output is invalid for fractional-gate targets | Broken in 2.5.2 |
+| 4 | 6 | [QPY writes arithmetic gates but cannot read them](#6-qpy-writes-arithmetic-gates-but-cannot-read-them) | qiskit | Saved circuits cannot be loaded | Broken in 2.5.2 |
+| 5 | 1 | [Noise applied twice in a density-matrix circuit that follows a statevector circuit](#1-aer-noise-applied-twice) | qiskit-aer | Silent wrong result: trace(rho) = 2 | Broken in 0.17.2 and on main |
 | 6 | 7 | [QPY cannot read wide MCX gates](#7-qpy-cannot-read-wide-mcx-gates) | qiskit | Wide controlled gates cannot be loaded | 63/127 fail in 2.5.2; 32 also fails on checked main |
 | 7 | 16 | [num_basis_gates disagrees with its decomposition](num-basis-gates-estimator-mismatch/) | qiskit | Estimate 0 CX for H;SWAP, equivalent synthesis emits 3 | Reproduced in 2.6.0 and main ef112241; diagnosed, unpatched |
 | 8 | 13 | [Near-identity rotations bypass checks for non-unitary instructions](commutation-near-identity-before-precheck/) | qiskit | Non-unitary instructions get a unitary shortcut | Reproduced in 2.6.0 and main ef112241 |
@@ -56,7 +58,7 @@ separate runtime and private-API diagnostic scope.
 
 ## Contents
 
-- [Start here: five to look at first](#start-here-three-to-look-at-first)
+- [Start here: three to look at first](#start-here-three-to-look-at-first)
 - [Environment](#environment)
 - [How to run](#how-to-run)
 - [1. Aer: noise applied twice](#1-aer-noise-applied-twice)
