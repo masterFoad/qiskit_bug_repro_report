@@ -4,6 +4,8 @@
 
 Run `python repro.py`. The script prints `REPRODUCED` or `NOT_REPRODUCED`; it does not fail when a future version fixes the behaviour. It also prints a one-gate `RZ(1.2e-4)` control, which survives because a one-gate run is not rewritten by the merge path.
 
+Verdicts require a phase-aligned operator distance greater than `1e-6` from the input. The standalone case also requires all gates to be removed; the preset cases require the output to match the expected CX-only circuit within a phase-aligned distance of `1e-12`. The printed `Operator.equiv` result is diagnostic only, so its default tolerances cannot suppress a verdict. `NOT_REPRODUCED` means this specific failure was not detected, rather than guaranteeing that the output is correct.
+
 Observed outputs are [release 2.6.0](outputs/release-2.6.0.txt) and [main ef112241](outputs/main-ef112241.txt). Both stored runs used Python 3.13.14 on macOS arm64 (`darwin`). Main was built from Qiskit commit `ef11224130eecc78d46e3b84f11e2155a5cb6556`; the SHA-256 of the compiled Qiskit extension used was `6ad1fcd9daff14bc821e94dc4d3542c17ba5b6e0cf9fc2ed9c465d4f36b04780`.
 
 The relevant source is `is_multiple_of_pi` in `crates/transpiler/src/passes/commutation_cancellation.rs`, which uses the fixed normalized-angle cutoff. The script uses the pass default `approximation_degree` and uses `seed_transpiler=1` for the preset cases; it does not sweep other seeds.
