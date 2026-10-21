@@ -1,0 +1,5 @@
+qiskit 2.6.0
+O0 TranspilerError: 'ecr would be supported on [Qubit(2), Qubit(1)] if the direction was swapped, but no rules are known to do that. ["cx", "cz", "ecr", "swap", "rzx", "rxx", "ryy"
+O1 TranspilerError: 'ecr would be supported on [Qubit(2), Qubit(1)] if the direction was swapped, but no rules are known to do that. ["cx", "cz", "ecr", "swap", "rzx", "rxx", "ryy"
+O2 TranspilerError: 'ecr would be supported on [Qubit(2), Qubit(1)] if the direction was swapped, but no rules are known to do that. ["cx", "cz", "ecr", "swap", "rzx", "rxx", "ryy"
+O3 TranspilerError: 'ecr would be supported on [Qubit(2), Qubit(1)] if the direction was swapped, but no rules are known to do that. ["cx", "cz", "ecr", "swap", "rzx", "rxx", "ryy"

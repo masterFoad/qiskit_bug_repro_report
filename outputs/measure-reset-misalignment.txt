@@ -1,0 +1,4 @@
+qiskit 2.6.0 runtime 0.50.0
+acquire alignment: 16 sx duration: 7
+alap off-grid: [('reset', 1, 33), ('measure', 0, 442), ('measure', 1, 442), ('measure', 2, 442)]
+asap off-grid: [('reset', 1, 33), ('measure', 0, 26), ('measure', 1, 435), ('measure', 2, 442)]

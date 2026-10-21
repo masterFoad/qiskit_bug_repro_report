@@ -1,0 +1,6 @@
+qiskit 2.6.0
+input angle 1.5707963258948965 loaded angle 1.5707963267948966
+angle change 9.000000744663339e-10
+input phase 0.75 loaded phase 0.0
+operator equal False
+exported gate rzz(pi/2) q[0], q[1];

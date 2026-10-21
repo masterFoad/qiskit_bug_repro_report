@@ -1,0 +1,4 @@
+qiskit 2.6.0
+alignments 1 16
+reschedule_required False expected True
+measure_start 107 mod_acquire 11

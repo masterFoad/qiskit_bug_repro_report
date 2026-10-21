@@ -1,0 +1,4 @@
+qiskit 2.6.0 openqasm3 1.0.1
+default: rz(2pi + pi*th) q[0];
+disable_constants: rz(23.141592653589793 + 3.141592653589793*th) q[0];
+reference parse: QASM3ParsingError

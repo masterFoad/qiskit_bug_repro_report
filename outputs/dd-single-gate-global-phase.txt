@@ -1,0 +1,4 @@
+qiskit 2.6.0
+equal up to global phase: True
+exactly equal: False
+global phase error (rad): -1.3

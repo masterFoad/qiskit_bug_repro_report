@@ -1,0 +1,3 @@
+cx unsupported: [('u', (0,))]
+rzz unsupported: [('u', (0,)), ('u', (0,)), ('rz', (1,))]
+qiskit 2.6.0

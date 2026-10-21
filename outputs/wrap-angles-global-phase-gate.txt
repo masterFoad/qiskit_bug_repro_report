@@ -1,0 +1,4 @@
+qiskit 2.6.0 runtime 0.50.0
+operations: ['global_phase', 'rz', 'x', 'rz', 'rzz', 'x']
+outside target: ['global_phase']
+scheduling: TranspilerError 'Duration of global_phase on qubits [] is not found.'

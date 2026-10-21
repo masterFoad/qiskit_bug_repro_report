@@ -1,0 +1,3 @@
+qiskit 2.6.0 runtime 0.50.0
+duration: 100 mod alignment: 4
+DD: TranspilerError 'Time interval 100 is not divisible by alignment 16 between DAGInNode on qarg <Qubit register=(127, "q"), index=0> and DAGOutNode on qarg <Qubit register=(127, "q"), index=0>.'

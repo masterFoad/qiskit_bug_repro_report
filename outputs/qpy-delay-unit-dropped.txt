@@ -1,0 +1,4 @@
+qiskit 2.6.0 runtime 0.50.0
+qpy_v17 100 dt
+runtime 100 dt
+expected 100 us

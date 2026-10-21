@@ -1,0 +1,4 @@
+qiskit=2.6.0 qubits=409 ops=169855
+O2 transpile=1.753s
+PadDelay=5.463s stage=6.011s output_ops=211294
+PadDynamicalDecoupling=6.067s stage=6.633s output_ops=273220

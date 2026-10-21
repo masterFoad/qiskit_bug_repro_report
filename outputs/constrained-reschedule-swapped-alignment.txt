@@ -1,0 +1,3 @@
+qiskit 2.6.0
+pulse_alignment 16 acquire_alignment 1
+second_x_start 260 mod_pulse 4

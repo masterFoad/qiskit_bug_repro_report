@@ -1,0 +1,3 @@
+qiskit 2.6.0
+x[0,160) delay[160,272) sx[272,308) sx[304,340)
+overlap True expected False

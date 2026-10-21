@@ -1,8 +1,9 @@
 # Qiskit bug reproductions
 
-Minimal, standalone reproductions of eighteen observed problems in Qiskit, Qiskit Aer, and
+Minimal, standalone reproductions of thirty-two observed problems in Qiskit, Qiskit Aer, and
 qiskit-ibm-runtime: wrong or hardware-invalid results, compilation and serialization failures,
-misleading fake-backend calibration entries, repeated synthesis work, and seeded metric drift.
+misleading fake-backend calibration entries, repeated synthesis work, seeded metric drift, and
+slow scheduling padding.
 Each item has a short script, the output we observed, and the versions tested. Related upstream
 issues are linked below (the 2026-10-14 searches cover items 1-11; search context for
 items 12-16 is described in their folder READMEs). Bugs 2 and 4 demonstrate a reserved-name
@@ -28,8 +29,8 @@ Also worth a look:
 
 ## TL;DR
 
-All eighteen items, in suggested priority order (most important first). The `#` column keeps each item's
-original number, which the section headings and folders below use.
+The first eighteen rows retain their published priority order. Items 19-31 are new correctness
+and crash cases; item 32 is a performance case. The `#` column keeps each item's number.
 
 | Priority | # | Item | Library | Effect | Status as tested |
 |---|---|---|---|---|---|
@@ -51,10 +52,24 @@ original number, which the section headings and folders below use.
 | 16 | 8 | [GateDirection raises on a reversed custom ECR](#8-gatedirection-raises-on-a-reversed-custom-ecr) | qiskit | Compilation raises TranspilerError | Broken in 2.5.2 |
 | 17 | 18 | [Exact-fidelity options still permit tiny-angle approximation](two-qubit-basis-decomposer-exact-fidelity/) | qiskit | CP(1e-4) emits 0 CX with infidelity about 5e-10, even with approximate=False | Observed in 2.6.0 and recorded main f702690; API behavior issue |
 | 18 | 15 | [check_commutation_entries raises AttributeError](check-commutation-entries-attribute-error/) | qiskit | Method on the public session checker raises AttributeError | Reproduced in 2.6.0 and main ef112241 |
+| 19 | 19 | [Rescheduling can overlap two gates](#19-rescheduling-can-overlap-two-gates) | qiskit | Two SX gates overlap by 4 dt | Reproduced in 2.6.0 |
+| 20 | 20 | [Mixed alignments leave a measurement off-grid](#20-mixed-alignments-leave-a-measurement-off-grid) | qiskit | Measurement starts 11 dt off the acquire grid | Reproduced in 2.6.0 |
+| 21 | 21 | [Rescheduling swaps alignment arguments](#21-rescheduling-swaps-alignment-arguments) | qiskit | X gate starts 4 dt off the pulse grid | Reproduced in 2.6.0; #16186 open |
+| 22 | 22 | [QPY version 17 drops delay units](#22-qpy-version-17-drops-delay-units) | qiskit / qiskit-ibm-runtime | 100 us becomes 100 dt | Reproduced in 2.6.0 / 0.50.0; #8293 open |
+| 23 | 23 | [QPY cannot reload parameterized delays](#23-qpy-cannot-reload-parameterized-delays) | qiskit | Loaded operation raises CircuitError | Reproduced in 2.6.0 |
+| 24 | 24 | [BasisTranslator leaves a placeholder operation](#24-basistranslator-leaves-a-placeholder-operation) | qiskit | Reverse ECR fails at O0-O3 | Reproduced in 2.6.0 |
+| 25 | 25 | [Angle wrapping leaves a zero-qubit gate](#25-angle-wrapping-leaves-a-zero-qubit-gate) | qiskit / qiskit-ibm-runtime | Output has unsupported global_phase operation | Reproduced in 2.6.0 / 0.50.0; runtime fix merged, unreleased |
+| 26 | 26 | [Single-gate DD loses global phase](#26-single-gate-dd-loses-global-phase) | qiskit | Phase differs by -1.3 rad | Reproduced in 2.6.0 |
+| 27 | 27 | [Mixed one-qubit bases yield unsupported gates](#27-mixed-one-qubit-bases-yield-unsupported-gates) | qiskit | O0 output has U on an RZ/SX/X-only qubit | Reproduced in 2.6.0; #11339 open |
+| 28 | 28 | [Trailing delay remains off-grid](#28-trailing-delay-remains-off-grid) | qiskit | 100 dt delay fails 16 dt DD alignment | Reproduced in 2.6.0 |
+| 29 | 29 | [QASM 3 exporter corrupts pi expressions](#29-qasm-3-exporter-corrupts-pi-expressions) | qiskit | Emits unparsable `2pi + pi*th` | Reproduced in 2.6.0 |
+| 30 | 30 | [Measure and reset can start off-grid](#30-measure-and-reset-can-start-off-grid) | qiskit | FakePrague starts operations at 33 and 442 dt | Reproduced in 2.6.0 |
+| 31 | 31 | [QASM 3 round trip changes angle and phase](#31-qasm-3-round-trip-changes-angle-and-phase) | qiskit | Angle changes by 9e-10 rad; phase 0.75 becomes 0 | Reproduced in 2.6.0 |
+| 32 | 32 | [Python padding loops dominate scheduling](#32-python-padding-loops-dominate-scheduling) | qiskit | PadDelay 5.46 s vs O2 transpile 1.75 s locally | Measured in 2.6.0 |
 
 Items 1-11 retain their published test scope; they were not revalidated in the 2026-10-19 addition.
-`CHANGES.md` covers that earlier 1-11 preparation only; the 12-16 section records this addition's
-separate runtime and private-API diagnostic scope.
+[`CHANGES.md`](CHANGES.md) records this addition and its exclusions; the 12-16 section records
+that earlier addition's separate runtime and private-API diagnostic scope.
 
 ## Contents
 
@@ -74,6 +89,20 @@ separate runtime and private-API diagnostic scope.
 - [11. Seeded synthesis is not run-to-run deterministic](#11-seeded-synthesis-is-not-run-to-run-deterministic)
 - [12-16. Commutation and decomposition findings](#12-16-commutation-and-decomposition-findings)
 - [17-18. Initial layout and exact-fidelity synthesis](#17-18-initial-layout-and-exact-fidelity-synthesis)
+- [19. Rescheduling can overlap two gates](#19-rescheduling-can-overlap-two-gates)
+- [20. Mixed alignments leave a measurement off-grid](#20-mixed-alignments-leave-a-measurement-off-grid)
+- [21. Rescheduling swaps alignment arguments](#21-rescheduling-swaps-alignment-arguments)
+- [22. QPY version 17 drops delay units](#22-qpy-version-17-drops-delay-units)
+- [23. QPY cannot reload parameterized delays](#23-qpy-cannot-reload-parameterized-delays)
+- [24. BasisTranslator leaves a placeholder operation](#24-basistranslator-leaves-a-placeholder-operation)
+- [25. Angle wrapping leaves a zero-qubit gate](#25-angle-wrapping-leaves-a-zero-qubit-gate)
+- [26. Single-gate DD loses global phase](#26-single-gate-dd-loses-global-phase)
+- [27. Mixed one-qubit bases yield unsupported gates](#27-mixed-one-qubit-bases-yield-unsupported-gates)
+- [28. Trailing delay remains off-grid](#28-trailing-delay-remains-off-grid)
+- [29. QASM 3 exporter corrupts pi expressions](#29-qasm-3-exporter-corrupts-pi-expressions)
+- [30. Measure and reset can start off-grid](#30-measure-and-reset-can-start-off-grid)
+- [31. QASM 3 round trip changes angle and phase](#31-qasm-3-round-trip-changes-angle-and-phase)
+- [32. Python padding loops dominate scheduling](#32-python-padding-loops-dominate-scheduling)
 - [CommutationChecker findings and limits](commutation-checker-findings.md)
 - [Reproducing the current main build](#reproducing-the-current-main-build)
 - [Related items already fixed upstream](#related-items-already-fixed-upstream)
@@ -102,6 +131,11 @@ For items 1-11, the checked main is Qiskit 2.7.0.dev0 at
 Their local dependency and comparison versions are in [`outputs/versions.txt`](outputs/versions.txt).
 Items 12-16 use release 2.6.0 and locally built main 2.7.0.dev0 at
 `ef11224130eecc78d46e3b84f11e2155a5cb6556` (2026-10-19), with Python 3.13.14.
+
+Items 19-32 were rerun on macOS arm64 with Python 3.13.14, latest PyPI Qiskit 2.6.0,
+qiskit-ibm-runtime 0.50.0 where needed, and openqasm3 1.0.1 for item 29.
+See [`outputs/versions.txt`](outputs/versions.txt). Every added run had a 300-second timeout;
+the recorded performance run completed in under 20 seconds on this Mac.
 
 ## How to run
 
@@ -142,6 +176,16 @@ python commutation-library-name-collision/repro.py
 python check-commutation-entries-attribute-error/repro.py
 python num-basis-gates-estimator-mismatch/repro.py
 python num-basis-gates-estimator-mismatch/diagnose.py
+```
+
+For items 19-32, install the current PyPI releases in a separate environment and run each
+`repro.py` from its folder path. For example:
+
+```bash
+uv venv .venv-current
+uv pip install --python .venv-current/bin/python qiskit qiskit-ibm-runtime openqasm3
+.venv-current/bin/python constrained-reschedule-overlap/repro.py
+.venv-current/bin/python padding-python-loops/repro.py
 ```
 
 ---
@@ -440,6 +484,13 @@ when constructing a test target, and use the fake backend's faulty-operation che
 **Existing related issues:** [Qiskit/qiskit-ibm-runtime#1765](https://github.com/Qiskit/qiskit-ibm-runtime/pull/1765)
 adds `check_faulty` support; it does not establish target filtering of error-1.0 entries.
 
+In separate Qiskit 2.6.0 measurements, Sabre layout and routing did not read gate errors. When a
+Torino circuit used error-1.0 couplers, removing those entries from the test target changed its
+estimated log-success from -1665 to -48. On circuits that had avoided them already, removing the
+entries increased two-qubit gate counts by up to 25%. This supports avoiding these couplers during
+routing without removing usable connections indiscriminately. [Qiskit/qiskit#5155](https://github.com/Qiskit/qiskit/issues/5155)
+is the related open routing issue (checked 2026-10-21).
+
 ---
 
 ## 10. O3 repeatedly emits out-of-bounds rzz and retranslates
@@ -555,6 +606,345 @@ Weyl specialization control. They are reproducibility and API behavior issues;
 no source fixes or new timing claims are included. Upstream duplicate searches
 for these two additions have not been performed.
 
+## 19. Rescheduling can overlap two gates
+
+**TL;DR:** `ConstrainedReschedule` can move one SX gate into the preceding SX gate after aligning a delay.
+
+**Who is affected:** users scheduling circuits with off-grid delays for targets with timing constraints.
+
+**Script:** [`constrained-reschedule-overlap/repro.py`](constrained-reschedule-overlap/repro.py)
+
+**Expected vs actual:** the first SX runs at `[272, 308)` dt. The next should start at or after 308 dt;
+it starts at 304 dt, overlapping by 4 dt.
+
+Full output: [`outputs/constrained-reschedule-overlap.txt`](outputs/constrained-reschedule-overlap.txt).
+
+**Likely cause:** the rescheduler adds a Target duration in seconds, cast to an integer, to a start
+time in dt; a subsecond gate contributes zero dt when it decides whether to move a successor.
+
+**Workaround:** check scheduled start times for overlap before submitting; Qiskit 2.3.1 did not
+show this witness.
+
+**Related upstream issues/PRs (checked 2026-10-21):** no related issue found for this seconds-to-dt
+conversion. [#16186](https://github.com/Qiskit/qiskit/issues/16186) tracks a separate alignment
+argument swap; [#16210](https://github.com/Qiskit/qiskit/pull/16210) closed unmerged and
+[#16482](https://github.com/Qiskit/qiskit/pull/16482) remains open without fixing this conversion.
+
+---
+
+## 20. Mixed alignments leave a measurement off-grid
+
+**TL;DR:** the duration check does not request rescheduling when one alignment value is 1.
+
+**Who is affected:** users scheduling on targets with different pulse and acquire alignments.
+
+**Script:** [`instruction-duration-check-mixed-alignment/repro.py`](instruction-duration-check-mixed-alignment/repro.py)
+
+**Expected vs actual:** with pulse alignment 1 dt and acquire alignment 16 dt, a 100 dt delay
+should request rescheduling. The check returns `False`; measurement starts at 107 dt, 11 dt
+off the acquire grid.
+
+Full output: [`outputs/instruction-duration-check-mixed-alignment.txt`](outputs/instruction-duration-check-mixed-alignment.txt).
+
+**Likely cause:** the check accepts a duration divisible by either alignment when it needs both.
+
+**Workaround:** verify measurement start times against acquire alignment and align delays explicitly.
+
+**Related upstream issues/PRs (checked 2026-10-21):** no related issue found for this condition.
+The Rust duration-check port [#14700](https://github.com/Qiskit/qiskit/pull/14700) is context only.
+
+---
+
+## 21. Rescheduling swaps alignment arguments
+
+**TL;DR:** `ConstrainedReschedule` applies the acquire alignment to a pulse operation.
+
+**Who is affected:** users of targets where pulse and acquire alignments differ.
+
+**Script:** [`constrained-reschedule-swapped-alignment/repro.py`](constrained-reschedule-swapped-alignment/repro.py)
+
+**Expected vs actual:** with pulse alignment 16 dt and acquire alignment 1 dt, the second X
+should start on a multiple of 16; it starts at 260 dt, remainder 4.
+
+Full output: [`outputs/constrained-reschedule-swapped-alignment.txt`](outputs/constrained-reschedule-swapped-alignment.txt).
+
+**Likely cause:** the caller passes `(acquire, pulse)` to parameters ordered `(pulse, acquire)`.
+
+**Workaround:** verify pulse start times against the target grid; no general local correction was tested.
+
+**Related upstream issues/PRs (checked 2026-10-21):** known in open
+[#16186](https://github.com/Qiskit/qiskit/issues/16186); the targeted fix
+[#16482](https://github.com/Qiskit/qiskit/pull/16482) is open and unmerged.
+
+---
+
+## 22. QPY version 17 drops delay units
+
+**TL;DR:** a QPY v17 round trip, including the Runtime codec, changes `delay(100, "us")` to
+`delay(100, "dt")`.
+
+**Who is affected:** users passing circuits with non-dt delays through QPY v17 or the Runtime codec.
+
+**Script:** [`qpy-delay-unit-dropped/repro.py`](qpy-delay-unit-dropped/repro.py)
+
+**Expected vs actual:** the loaded delay should remain 100 us; both direct QPY v17 and Runtime
+encode/decode return 100 dt.
+
+Full output: [`outputs/qpy-delay-unit-dropped.txt`](outputs/qpy-delay-unit-dropped.txt).
+
+**Likely cause:** QPY v17 does not serialize the delay unit. Runtime 0.50.0 uses that QPY version.
+
+**Workaround:** transpile against the target first, or convert delays to dt explicitly before encoding.
+
+**Related upstream issues/PRs (checked 2026-10-21):** known in open
+[#8293](https://github.com/Qiskit/qiskit/issues/8293) and
+[#10662](https://github.com/Qiskit/qiskit/issues/10662). Open
+[#16806](https://github.com/Qiskit/qiskit/pull/16806) writes units only in QPY versions above 17.
+
+---
+
+## 23. QPY cannot reload parameterized delays
+
+**TL;DR:** a dumped circuit with a parameterized delay loads, but accessing its delay operation raises.
+
+**Who is affected:** users saving parameterized timing circuits with QPY.
+
+**Script:** [`qpy-parameterized-delay-unloadable/repro.py`](qpy-parameterized-delay-unloadable/repro.py)
+
+**Expected vs actual:** `delay(t)` should remain readable after load; both current QPY v18 and
+v17 raise `CircuitError: Unknown unit expr is specified.`
+
+Full output: [`outputs/qpy-parameterized-delay-unloadable.txt`](outputs/qpy-parameterized-delay-unloadable.txt).
+
+**Likely cause:** the loader interprets a parameterized delay as a classical expression-unit delay.
+
+**Workaround:** bind delay parameters before QPY serialization when the values are known.
+
+**Related upstream issues/PRs (checked 2026-10-21):** no related issue found.
+
+---
+
+## 24. BasisTranslator leaves a placeholder operation
+
+**TL;DR:** translation of a reverse-direction ECR on a target with mixed two-qubit gates fails.
+
+**Who is affected:** users compiling against targets where an operation is available on only some edges.
+
+**Script:** [`basis-translator-placeholder/repro.py`](basis-translator-placeholder/repro.py)
+
+**Expected vs actual:** the ECR on `(2, 1)` should be translated or direction-corrected using the
+target's ECR on `(1, 2)`; O0, O1, O2 and O3 all raise `TranspilerError` saying the direction could
+be swapped but no rule is known.
+
+Full output: [`outputs/basis-translator-placeholder.txt`](outputs/basis-translator-placeholder.txt).
+
+**Likely cause:** the qubit-local translation path keeps an internal placeholder when the gate
+name appears in the target but its requested direction is unsupported.
+
+**Workaround:** decompose the reverse-direction gate before this translation path, or use a
+supported physical direction when circuit placement allows it.
+
+**Related upstream issues/PRs (checked 2026-10-21):** no related issue found for this placeholder leak.
+
+---
+
+## 25. Angle wrapping leaves a zero-qubit gate
+
+**TL;DR:** wrapping an out-of-bounds RZZ leaves a zero-qubit `global_phase` operation outside the target.
+
+**Who is affected:** users compiling bounded-angle RZZ circuits with Runtime 0.50.0's wrapper.
+
+**Script:** [`wrap-angles-global-phase-gate/repro.py`](wrap-angles-global-phase-gate/repro.py)
+
+**Expected vs actual:** global phase should be stored as circuit phase. O0 instead produces
+`['global_phase', 'rz', 'x', 'rz', 'rzz', 'x']`; scheduling raises because the zero-qubit operation has
+no target duration.
+
+Full output: [`outputs/wrap-angles-global-phase-gate.txt`](outputs/wrap-angles-global-phase-gate.txt).
+
+**Likely cause:** the wrapper emits `GlobalPhaseGate` as a DAG operation after target translation.
+
+**Workaround:** avoid out-of-bounds RZZ angles or validate output against the target before scheduling.
+
+**Related upstream issues/PRs (checked 2026-10-21):** known; Runtime
+[#3489](https://github.com/Qiskit/qiskit-ibm-runtime/pull/3489) merged on 2026-10-15 and
+replaces the operation with DAG global phase, but is not in the latest release 0.50.0.
+
+---
+
+## 26. Single-gate DD loses global phase
+
+**TL;DR:** a one-gate dynamical decoupling sequence changes the circuit's global phase.
+
+**Who is affected:** users adding single-gate DD to circuits used as controlled blocks or in
+phase-sensitive comparisons.
+
+**Script:** [`dd-single-gate-global-phase/repro.py`](dd-single-gate-global-phase/repro.py)
+
+**Expected vs actual:** the padded circuit should have the same operator. It agrees only up to
+global phase; the measured phase error is -1.3 rad.
+
+Full output: [`outputs/dd-single-gate-global-phase.txt`](outputs/dd-single-gate-global-phase.txt).
+
+**Likely cause:** the neighboring U gate absorbs the inverse DD gate through angle composition,
+but the phase from that composition is discarded.
+
+**Workaround:** use a two-gate DD sequence such as XX when it fits the idle window, or avoid
+single-gate DD for phase-sensitive circuit blocks.
+
+**Related upstream issues/PRs (checked 2026-10-21):** no related issue found.
+
+---
+
+## 27. Mixed one-qubit bases yield unsupported gates
+
+**TL;DR:** a two-qubit gate translation can place one-qubit gates on a qubit whose local basis lacks them.
+
+**Who is affected:** users of heterogeneous per-qubit target bases, particularly at O0.
+
+**Script:** [`basis-translator-mixed-1q-basis/repro.py`](basis-translator-mixed-1q-basis/repro.py)
+
+**Expected vs actual:** qubit 0 permits only RZ, SX and X. Translating CX emits one unsupported U
+there; translating RZZ emits two U gates there and one unsupported RZ on qubit 1.
+
+Full output: [`outputs/basis-translator-mixed-1q-basis.txt`](outputs/basis-translator-mixed-1q-basis.txt).
+
+**Likely cause:** the one-qubit gates inside a two-qubit translation are chosen without the local
+one-qubit basis for each output qubit.
+
+**Workaround:** run `BasisTranslator` again on the translated result; higher optimization levels
+also resynthesize these gates in this witness.
+
+**Related upstream issues/PRs (checked 2026-10-21):** directly reported in open
+[#11339](https://github.com/Qiskit/qiskit/issues/11339). Open
+[#10013](https://github.com/Qiskit/qiskit/issues/10013) concerns a separate synthesis pass.
+
+---
+
+## 28. Trailing delay remains off-grid
+
+**TL;DR:** a delay with no later operation on its wire is not aligned to the target's timing grid.
+
+**Who is affected:** users scheduling circuits with trailing delays, especially before DD padding.
+
+**Script:** [`trailing-delay-misaligned/repro.py`](trailing-delay-misaligned/repro.py)
+
+**Expected vs actual:** a 100 dt delay should end on the 16 dt grid; the scheduled duration remains
+100 dt, remainder 4, and DD raises `Time interval 100 is not divisible by alignment 16`.
+
+Full output: [`outputs/trailing-delay-misaligned.txt`](outputs/trailing-delay-misaligned.txt).
+
+**Likely cause:** constrained rescheduling aligns delays when pushing a successor, but this delay
+has no successor on its wire.
+
+**Workaround:** make trailing delays multiples of the target alignment before scheduling.
+
+**Related upstream issues/PRs (checked 2026-10-21):** no direct issue found. Open
+[#10294](https://github.com/Qiskit/qiskit/issues/10294) concerns the DD error message only.
+
+---
+
+## 29. QASM 3 exporter corrupts pi expressions
+
+**TL;DR:** the default QASM 3 exporter substitutes `pi` inside a parameter expression's numeric text.
+
+**Who is affected:** users exporting parameterized circuits whose expression contains pi-like floats.
+
+**Script:** [`qasm3-expr-pi-substitution/repro.py`](qasm3-expr-pi-substitution/repro.py)
+
+**Expected vs actual:** a valid expression such as `23.141592653589793 + 3.141592653589793*th`
+should remain parseable. The exporter emits `2pi + pi*th`; the openqasm3 1.0.1 reference parser
+raises `QASM3ParsingError`.
+
+Full output: [`outputs/qasm3-expr-pi-substitution.txt`](outputs/qasm3-expr-pi-substitution.txt).
+
+**Likely cause:** textual replacement of pi-like substrings changes the surrounding numeric literal.
+
+**Workaround:** call `qasm3.dumps(circuit, disable_constants=True)` for this case.
+
+**Related upstream issues/PRs (checked 2026-10-21):** no related issue found.
+
+---
+
+## 30. Measure and reset can start off-grid
+
+**TL;DR:** scheduling can leave measurement and reset starts off the acquire grid even with no delays.
+
+**Who is affected:** users scheduling on targets whose gate durations do not respect acquire alignment.
+
+**Script:** [`measure-reset-misalignment/repro.py`](measure-reset-misalignment/repro.py)
+
+**Expected vs actual:** FakePrague's acquire grid is 16 dt and SX lasts 7 dt. In the ALAP output,
+reset starts at 33 dt and three measurements at 442 dt, none a multiple of 16. ASAP also has four
+off-grid operations, starting at 26, 33, 435 and 442 dt.
+
+Full output: [`outputs/measure-reset-misalignment.txt`](outputs/measure-reset-misalignment.txt).
+
+**Likely cause:** duration checking focuses on delays and assumes gate durations already meet the grid.
+
+**Workaround:** inspect scheduled measure/reset starts against target constraints; no general
+local correction was tested.
+
+**Related upstream issues/PRs (checked 2026-10-21):** no related issue found.
+
+---
+
+## 31. QASM 3 round trip changes angle and phase
+
+**TL;DR:** default QASM 3 export changes a near-pi angle and omits circuit global phase.
+
+**Who is affected:** users round-tripping phase-sensitive circuits or near-pi rotations through QASM 3.
+
+**Script:** [`qasm3-angle-and-phase-change/repro.py`](qasm3-angle-and-phase-change/repro.py)
+
+**Expected vs actual:** the input RZZ angle `1.5707963258948965` reloads as
+`1.5707963267948966`, a change of `9.000000744663339e-10` rad. Circuit global phase `0.75`
+reloads as `0.0`; the operators compare unequal.
+
+Full output: [`outputs/qasm3-angle-and-phase-change.txt`](outputs/qasm3-angle-and-phase-change.txt).
+
+**Likely cause:** default constant formatting snaps near-pi numeric values to exact pi fractions;
+the exporter does not emit the circuit's global phase.
+
+**Workaround:** `disable_constants=True` avoids the numeric snap; preserve global phase separately
+if exact operator equality is required.
+
+**Related upstream issues/PRs (checked 2026-10-21):**
+the global-phase omission is known in open [#12114](https://github.com/Qiskit/qiskit/issues/12114).
+Its proposed fix [#12118](https://github.com/Qiskit/qiskit/pull/12118) is open and on hold.
+No related issue found for the numeric snap in this witness.
+
+---
+
+## 32. Python padding loops dominate scheduling
+
+**TL;DR:** Python-side PadDelay and PadDynamicalDecoupling cost more than O2 transpilation on a
+320-qubit QFT routed to a 409-qubit target.
+
+**Who is affected:** users padding large, wide routed circuits before execution.
+
+**Script:** [`padding-python-loops/repro.py`](padding-python-loops/repro.py)
+
+**Expected vs actual:** the Mac rerun spent 1.753 s in O2 transpilation, 5.463 s in PadDelay and
+6.067 s in PadDynamicalDecoupling (individual pass times; stage totals 6.011 and 6.633 s).
+A separate 409-qubit measurement recorded 3.36 s O2 transpilation, 11.34 s PadDelay and 12.01 s
+DD padding on this QFT. Its equivalent-output prototype reduced those padding times to 1.24 and
+1.72 s, respectively.
+
+Full output: [`outputs/padding-python-loops.txt`](outputs/padding-python-loops.txt).
+
+**Likely cause:** the padding loop rebuilds the full wire-output map for each gap and repeats
+qubit-index and duration lookups. Keeping the last node per wire, mapping qubits to indices once,
+and caching durations by operation and qubits would remove those repeated costs.
+
+**Workaround:** avoid optional padding on large circuits when it is not required; when it is
+required, account for its time separately from transpilation.
+
+**Related upstream issues/PRs (checked 2026-10-21):** open
+[#13023](https://github.com/Qiskit/qiskit/issues/13023) describes repeated output-map rebuilding;
+[#12266](https://github.com/Qiskit/qiskit/issues/12266) and
+[#14620](https://github.com/Qiskit/qiskit/issues/14620) request Rust padding ports.
+
 ## Reproducing the current main build
 
 ```bash
@@ -591,6 +981,20 @@ fake-backend-error-one-couplers/repro.py
 o3-rzz-retranslation/repro.py
 seeded-synthesis-nondeterminism/repro.py
 CHANGES.md          review notes and validation deviations
+constrained-reschedule-overlap/repro.py
+instruction-duration-check-mixed-alignment/repro.py
+constrained-reschedule-swapped-alignment/repro.py
+qpy-delay-unit-dropped/repro.py
+qpy-parameterized-delay-unloadable/repro.py
+basis-translator-placeholder/repro.py
+wrap-angles-global-phase-gate/repro.py
+dd-single-gate-global-phase/repro.py
+basis-translator-mixed-1q-basis/repro.py
+trailing-delay-misaligned/repro.py
+qasm3-expr-pi-substitution/repro.py
+measure-reset-misalignment/repro.py
+qasm3-angle-and-phase-change/repro.py
+padding-python-loops/repro.py
 commutative-cancellation-angle-cutoff/             README, repro.py, outputs/
 commutation-near-identity-before-precheck/          README, repro.py, outputs/
 commutation-library-name-collision/                README, repro.py, outputs/

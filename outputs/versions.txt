@@ -54,3 +54,10 @@ python 3.12.13
 qiskit 2.5.2 (seeded synthesis)
 qiskit 2.7.0.dev0 (wide MCX and seeded synthesis)
 qiskit-main-commit c841572607fb4db230f1cf4ba5488a3b7cd98f86
+
+Low-level reproductions on macOS arm64, 2026-10-21 (latest PyPI releases):
+python 3.13.14
+qiskit 2.6.0
+qiskit-ibm-runtime 0.50.0
+openqasm3 1.0.1
+qiskit-qasm3-import 0.6.0
