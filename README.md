@@ -161,8 +161,9 @@ python seeded-synthesis-nondeterminism/repro.py
 
 Each script prints its package versions first, then the results. The added scripts for
 items 4-11, and the separate scripts for 12-16, also print Python.
-Expected failures are caught and printed without a traceback; a successful process exit does not mean
-the defect is fixed. No account or hardware access is needed.
+Most expected failures are caught and printed without a traceback; a successful process exit does not mean
+the defect is fixed. The simplified Clifford+T script leaves its exception uncaught and exits nonzero
+on affected versions. No account or hardware access is needed.
 
 The five additional items use a separate Qiskit-only environment:
 
@@ -333,7 +334,11 @@ inside the body is Clifford. This is a regression since 2.4.0 introduced by PR #
 
 **Script:** [`clifford-t-control-flow/repro.py`](clifford-t-control-flow/repro.py)
 
-**Expected vs actual** (2 qubits, 1 classical bit, O2, `h; measure; if_else { x }`):
+**Detailed report:** [`clifford-t-control-flow/README.md`](clifford-t-control-flow/README.md)
+documents the simplified one-qubit script with line-by-line comments, comparisons on 2.3.1, 2.4.0, and 2.6.0,
+and the intermediate-basis diagnosis.
+
+**Earlier two-qubit comparison** (1 classical bit, O2, `h; measure; if_else { x }`):
 
 | Version | Static control: compiled circuits | Expected dynamic: compiled circuits | Actual dynamic |
 |---|---|---|---|
