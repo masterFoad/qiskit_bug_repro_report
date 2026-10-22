@@ -148,7 +148,8 @@ pip install "qiskit==2.5.2" "qiskit-aer==0.17.2" "qiskit-ibm-runtime==0.50.0"
 
 python aer-noise-applied-twice/repro.py
 python custom-rz-name-kept-as-native/repro.py            # add --gadget for the 2-qubit case
-python rzz-angle-bounds-in-control-flow/repro.py         # add --ibm-plugin for the comparison
+python rzz-angle-bounds-in-control-flow/repro.py         # minimal, Qiskit only
+python rzz-angle-bounds-in-control-flow/repro_full.py    # add --ibm-plugin for the comparison
 python custom-cx-name-kept-as-native/repro.py
 python clifford-t-control-flow/repro.py
 python qpy-arithmetic-gates/repro.py
@@ -298,8 +299,21 @@ valid circuit for the target.
 
 **Who is affected:** dynamic circuits compiled with stock Qiskit against an angle-bounded `Target`.
 
-**Script:** [`rzz-angle-bounds-in-control-flow/repro.py`](rzz-angle-bounds-in-control-flow/repro.py)
-(target: `FakeFez` plus `RZZGate(theta)` on every `cz` pair with `angle_bounds=[(0, pi/2)]`)
+**Minimal script:** [`rzz-angle-bounds-in-control-flow/repro.py`](rzz-angle-bounds-in-control-flow/repro.py)
+uses only Qiskit, a two-qubit `Target`, and one `transpile(..., optimization_level=0)` call.
+It explicitly registers an exact wrapping rule for the test angle, then places `rzz(-0.4)`
+both at the top level and inside `if_else`. On Qiskit 2.6.0 it prints:
+
+```text
+qiskit 2.6.0
+Expected: all RZZ angles in [0, pi/2]
+Top level: [0.4]
+Inside if_else: [-0.4]
+```
+
+**Full script:** [`rzz-angle-bounds-in-control-flow/repro_full.py`](rzz-angle-bounds-in-control-flow/repro_full.py)
+retains the original seed, optimization-level, and IBM plugin comparisons below
+(target: `FakeFez` plus `RZZGate(theta)` on every `cz` pair with `angle_bounds=[(0, pi/2)]`).
 
 **Expected vs actual** (out-of-range `rzz` in the output, 4 seeds per cell):
 
@@ -977,6 +991,7 @@ retain their earlier main pin and version evidence.
 aer-noise-applied-twice/repro.py
 custom-rz-name-kept-as-native/repro.py
 rzz-angle-bounds-in-control-flow/repro.py
+rzz-angle-bounds-in-control-flow/repro_full.py
 custom-cx-name-kept-as-native/repro.py
 clifford-t-control-flow/repro.py
 qpy-arithmetic-gates/repro.py

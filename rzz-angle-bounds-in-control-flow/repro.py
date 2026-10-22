@@ -1,71 +1,57 @@
-"""rzz angles inside control-flow bodies are not brought into the target's angle bounds.
+"""RZZ angle bounds are enforced at the top level but ignored inside if_else."""
 
-Target: FakeFez plus RZZGate(theta) on every cz pair with angle_bounds [0, pi/2] (as on fractional-gate Heron
-devices). A top-level out-of-bound rzz is folded into range, but the same gate inside an if_else body is left
-as is, so the output is not a valid circuit for the target. On 2.5.x a valid body (cx; rz; cx) is also
-re-synthesised into an out-of-bound rzz at O2/O3.
+from math import pi
 
-Usage: python repro.py              (stock translation)
-       python repro.py --ibm-plugin (compare with qiskit-ibm-runtime's "ibm_dynamic_and_fractional" plugin)
-"""
-import math
-import sys
-import qiskit
-from qiskit import QuantumCircuit, transpile
-from qiskit.circuit import ControlFlowOp, Parameter
-from qiskit.circuit.library import RZZGate
-from qiskit.transpiler import InstructionProperties
-from qiskit_ibm_runtime.fake_provider import FakeFez
+from qiskit import QuantumCircuit, __version__, transpile
+from qiskit.circuit import IfElseOp, Parameter
+from qiskit.circuit.library import RZZGate, XGate
+from qiskit.converters import circuit_to_dag
+from qiskit.transpiler import Target
+from qiskit.transpiler.passes import WrapAngles
 
-print("qiskit", qiskit.__version__)
-target = FakeFez().target
-props = {qargs: InstructionProperties(error=p.error, duration=p.duration) if p else None
-         for qargs, p in target["cz"].items()}
-target.add_instruction(RZZGate(Parameter("theta")), props, angle_bounds=[(0.0, math.pi / 2)])
-print("target has angle bounds:", target.has_angle_bounds(), "| if_else supported:", "if_else" in target.operation_names)
+target = Target(num_qubits=2)
+target.add_instruction(RZZGate(Parameter("theta")), angle_bounds=[(0, pi / 2)])
+target.add_instruction(XGate())
+target.add_instruction(IfElseOp, name="if_else")
 
 
-def out_of_bounds(circuit, path="top"):
-    found = []
-    for inst in circuit.data:
-        op = inst.operation
-        if isinstance(op, ControlFlowOp):
-            for k, block in enumerate(op.blocks):
-                found += out_of_bounds(block, f"{path}/{op.name}[{k}]")
-        elif op.name == "rzz" and not (-1e-12 <= float(op.params[0]) <= math.pi / 2 + 1e-12):
-            found.append((path, round(float(op.params[0]), 6)))
-    return found
+def wrap_rzz(angles, _qubits):
+    """Give WrapAngles an equivalent replacement for the negative test angle.
+
+    Conjugating RZZ by X on one qubit reverses its angle, so
+    X(0); RZZ(0.4); X(0) implements exactly RZZ(-0.4), with an RZZ angle
+    inside the target's [0, pi/2] bounds. This rule brings angles in
+    [-pi/2, 0) into range; it is not a general-purpose RZZ wrapper.
+
+    Target bounds specify which angles are allowed, but do not specify how
+    to rewrite a gate. Registering this callback supplies that rewrite
+    without relying on IBM Runtime. The corrected top-level gate then shows
+    that wrapping works, exposing its omission inside the if_else body.
+
+    ``angles[0]`` is the original RZZ angle. ``_qubits`` contains the original
+    qubit indices, which this rule does not need: WrapAngles maps the two
+    local replacement qubits onto the original gate's qubits. The return
+    value is a DAGCircuit, the circuit representation required by the callback.
+    """
+    replacement = QuantumCircuit(2)
+    replacement.x(0)
+    replacement.rzz(-angles[0], 0, 1)
+    replacement.x(0)
+    return circuit_to_dag(replacement)
 
 
-def in_if_else(body, label):
-    qc = QuantumCircuit(2, 1)
-    qc.h(0)
-    qc.measure(0, 0)
-    with qc.if_test((qc.clbits[0], 1)):
-        body(qc)
-    return label, qc
+WrapAngles.DEFAULT_REGISTRY.add_wrapper("rzz", wrap_rzz)
 
+qc = QuantumCircuit(2, 1)
+qc.rzz(-0.4, 0, 1)
+with qc.if_test((qc.clbits[0], 0)):
+    qc.rzz(-0.4, 0, 1)
 
-if "--ibm-plugin" in sys.argv:
-    label, qc = in_if_else(lambda q: (q.cx(0, 1), q.rz(0.4, 1), q.cx(0, 1)), "if_else{cx rz(0.4) cx}")
-    for method in ("default", "ibm_dynamic_and_fractional"):
-        for level in (2, 3):
-            out = transpile(qc, target=target, optimization_level=level, seed_transpiler=0,
-                            translation_method=method)
-            print(f"{label} translation_method={method:27s} O{level}: out-of-bound rzz = {out_of_bounds(out)}")
-    sys.exit()
+out = transpile(qc, target=target, optimization_level=0)
+body = out.data[-1].operation.blocks[0]
 
-cases = [in_if_else(lambda q: q.rzz(-math.pi / 2, 0, 1), "if_else{rzz(-pi/2)}"),
-         in_if_else(lambda q: q.rzz(2.5, 0, 1), "if_else{rzz(2.5)}"),
-         in_if_else(lambda q: (q.cx(0, 1), q.rz(0.4, 1), q.cx(0, 1)), "if_else{cx rz(0.4) cx}"),
-         in_if_else(lambda q: q.cz(0, 1), "if_else{cz} (control)")]
-top = QuantumCircuit(2)
-top.rzz(-math.pi / 2, 0, 1)
-cases.append(("top-level rzz(-pi/2)", top))
-for label, qc in cases:
-    for level in range(4):
-        results = [out_of_bounds(transpile(qc, target=target, optimization_level=level, seed_transpiler=s))
-                   for s in range(4)]
-        bad = sum(1 for r in results if r)
-        example = next((r for r in results if r), "")
-        print(f"{label:26s} O{level}: out of bounds on {bad}/4 seeds {example}")
+print("qiskit", __version__)
+print("Expected: all RZZ angles in [0, pi/2]")
+for label, circuit in (("Top level", out), ("Inside if_else", body)):
+    angles = [float(i.operation.params[0]) for i in circuit.data if i.operation.name == "rzz"]
+    print(f"{label}: {angles}")
